@@ -14,6 +14,16 @@ import (
 var nodeMapping map[int]string
 var lockedNodes []int
 
+const (
+	node1 = 0x02
+	node2 = 0x04
+	node3 = 0x08
+	node4 = 0x10
+	node5 = 0x80
+	node6 = 0x40
+	node7 = 0x20
+)
+
 func getOperation() (string, error) {
 	if len(os.Args) > 1 {
 		return os.Args[1], nil
@@ -59,6 +69,10 @@ func main() {
 		turnOnAllNodes()
 	case "turnOffAll":
 		turnOfAllNodes()
+	case "powerState":
+		status, err := getPowerStatus()
+		logFatalIfErr(err)
+		status.Print()
 	default:
 		log.Fatalln("No valid operation")
 	}
@@ -128,4 +142,44 @@ func turnOnAllNodes() {
 		logCmdOutput(turnOnNode(nodeNumber))
 		time.Sleep(1 * time.Second)
 	}
+}
+
+type PowerStatus struct {
+	Node1 bool
+	Node2 bool
+	Node3 bool
+	Node4 bool
+	Node5 bool
+	Node6 bool
+	Node7 bool
+}
+
+func (p *PowerStatus) Print() {
+	log.Println("Node1", p.Node1)
+	log.Println("Node2", p.Node2)
+	log.Println("Node3", p.Node3)
+	log.Println("Node4", p.Node4)
+	log.Println("Node5", p.Node5)
+	log.Println("Node6", p.Node6)
+	log.Println("Node7", p.Node7)
+}
+
+func getPowerStatus() (PowerStatus, error) {
+	output, err := shell.Exec("i2cget", "-y", "1", "0x57", "0xf2")
+	if err != nil {
+		return PowerStatus{}, nil
+	}
+	output = strings.TrimSpace(output)
+	cleaned := strings.Replace(output, "0x", "", -1)
+	result, _ := strconv.ParseInt(cleaned, 16, 64)
+
+	return PowerStatus{
+		result&node1 > 0,
+		result&node2 > 0,
+		result&node3 > 0,
+		result&node4 > 0,
+		result&node5 > 0,
+		result&node6 > 0,
+		result&node7 > 0,
+	}, nil
 }
