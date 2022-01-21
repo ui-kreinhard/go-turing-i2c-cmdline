@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
@@ -43,7 +42,7 @@ func logCmdOutput(output string, err error) {
 }
 
 func main() {
-	loadLockFile()
+	loadLockedNodes()
 	initNodeMapping()
 	operation, err := getOperation()
 	logFatalIfErr(err)
@@ -65,12 +64,9 @@ func main() {
 	}
 }
 
-func loadLockFile() error {
+func loadLockedNodes() {
 	lockedNodes = []int{}
-	rawData, err := ioutil.ReadFile("/etc/lockedNodes")
-	if err != nil {
-		return err
-	}
+	rawData := os.Getenv("TPI_LOCKED_NODES")
 	data := strings.Split(string(rawData), ",")
 	for _, nodeStr := range data {
 		nodeStr = strings.TrimSpace(nodeStr)
@@ -82,7 +78,6 @@ func loadLockFile() error {
 		}
 	}
 	log.Println("locked nodes are", lockedNodes, ". These nodes will be ignored for all operations")
-	return nil
 }
 
 func isLocked(nodeNumber int) bool {

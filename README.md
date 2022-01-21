@@ -20,13 +20,19 @@ When you run this cmdline from a turing pi node you need to 'lock' this node. Wi
 
 Node numbering starts with 1
 
+We use the env var TPI_LOCKED_NODES for it. It make sense to place it in /etc/profile.d/locked_nodes.sh
+
 ```
-echo "NODENUMBER" > /etc/lockedNodes
+cat /etc/profile.d/locked_nodes.sh
+#!/bin/bash
+export TPI_LOCKED_NODES="NODENUMBER"
+
 ```
 e.g. ignore 1 and 4 for commands
 
 ```
-echo "1,4" > /etc/lockedNodes
+#!/bin/bash
+export TPI_LOCKED_NODES="1,4"
 ```
 
 ```
